@@ -20,4 +20,7 @@ bot-env\Scripts\activate.bat
 > Installing the requirements
 pip install -r requirements.txt
 
+> Setting the secret token
+touch secret
+[put token in secret]
 ```
