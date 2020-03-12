@@ -1,8 +1,0 @@
-{
-  “name”: “reyes bot”,
-  “version”: “0.0.1”,
-  “description”: “a discord bot for our good buddy and pal mr. reyes”,
-  “main”: “bot.js”,
-  “author”: “Charlie Luo w/ Evan Wang”,
-  “dependencies”: {}
-}
