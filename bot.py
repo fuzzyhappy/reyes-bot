@@ -7,13 +7,14 @@ client = discord.Client()
 # queue of people who need help
 queue = []
 # dictionary of commands and their descriptions
-commandList = ["!needhelp", "!cancelhelp", "!queue", "!ready", "!srccode", "!help"]
+commandList = ["!needhelp", "!cancelhelp", "!queue", "!ready", "!srccode", "!setrole <Role>", "!help"]
 commandDict = {0: "Add yourself to the queue to get help from Mr. Reyes.",
                1: "Remove yourself from the queue to get help from Mr. Reyes.",
                2: "Get the queue of people waiting for help.",
                3: "Only Mr. Reyes can use this command, it pings and removes the first person in the help queue.",
                4: "Responds with a link to my source GitHub repository. Suggest edits if you think they're necessary!",
-               5: "Lists recognized commands."}
+               5: "CURRENTLY UNUSABLE", # Allows users to claim that they are in mvc-la, calc-bc, or alg-2-elements for easy identification.
+               6: "Lists recognized commands."}
 
 @client.event
 async def on_message(message):
@@ -72,6 +73,20 @@ async def on_message(message):
         # src code
         if command == "!srccode":
             response += "https://github.com/fuzzyhappy/reyes-bot"
+
+        # allows students to set their role
+        if command == "!setrole":
+            if len(content.split(" ")) >= 2:
+                desiredRole = content.split(" ")[1]
+                if desiredRole != "moderator" or desiredRole != "teacher":
+                    await author.add_roles(discord.utils.get(author.guild.roles, name = desiredRole))
+                    response += "You were successfully given the role " + desiredRole + "."
+                elif desiredRole == "moderator" or desiredRole == "teacher":
+                    response += "You are not authorized to request that role from this bot."
+                else:
+                    response += "Role not found, check for spelling mistakes, the only roles offered are mvc-la, calc-bc, and alg-2-elements."
+            else:
+                response += "You did not specify what role you wanted! The format for !setrole is !setrole <Role Name (case sensitive)>."
 
         # lists commands
         if command == "!help":
