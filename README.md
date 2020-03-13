@@ -23,4 +23,7 @@ pip install -r requirements.txt
 > Setting the secret token
 touch secret
 [put token in secret]
+
+> Running bot on Windows
+py bot.py
 ```
