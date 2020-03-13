@@ -11,7 +11,7 @@ commandDict = {0: "Add yourself to the queue to get help from Mr. Reyes.",
                2: "Get the queue of people waiting for help.",
                3: "Only Mr. Reyes can use this command, it pings and removes the first person in the help queue.",
                4: "Responds with a link to my source GitHub repository. Suggest edits if you think they're necessary!",
-               5: "CURRENTLY UNUSABLE", # Allows users to claim that they are in mvc-la, calc-bc, or alg-2-elements for easy identification.
+               5: "Allows users to claim that they are in mvc-la, calc-bc, or alg-2-elements for easy identification.",
                6: "Lists recognized commands."}
 
 @client.event
