@@ -1,6 +1,4 @@
 import discord
-import collections
-import enum
 
 client = discord.Client()
 
@@ -78,7 +76,7 @@ async def on_message(message):
         if command == "!setrole":
             if len(content.split(" ")) >= 2:
                 desiredRole = content.split(" ")[1]
-                if desiredRole != "moderator" or desiredRole != "teacher":
+                if desiredRole != "moderator" and desiredRole != "teacher":
                     await author.add_roles(discord.utils.get(author.guild.roles, name = desiredRole))
                     response += "You were successfully given the role " + desiredRole + "."
                 elif desiredRole == "moderator" or desiredRole == "teacher":
