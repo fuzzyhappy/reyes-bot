@@ -15,15 +15,20 @@ py -m venv botenv
 > Activating the env
 source botenv/bin/activate
 >> Windows
-bot-env\Scripts\activate.bat
+botenv\Scripts\activate.bat
 
 > Installing the requirements
 pip install -r requirements.txt
+
+> Installing discord.py
+pip install -U discord.py
 
 > Setting the secret token
 touch secret
 [put token in secret]
 
-> Running bot on Windows
+> Running bot
+python bot.py
+>> Windows
 py bot.py
 ```
