@@ -1,162 +1,153 @@
 import discord
+from discord.ext import commands
 
-client = discord.Client()
+bot = commands.Bot(command_prefix='!', description='Classroom helper bot')
+students = []
 
-# queue of people who need help
-queue = []
-# dictionary of commands and their descriptions
-commandList = ["!needhelp", "!cancelhelp", "!queue", "!srccode", "!setcourse <Course>", "!help"]
-teacherCommands = ["!ready", "!skip", "!resolve <(optional) Name>", "!clear"]
-commandDict = {0: "Add yourself to the queue to get help from Mr. Reyes.",
-               1: "Remove yourself from the queue to get help from Mr. Reyes.",
-               2: "Get the queue of people waiting for help.",
-               3: "Responds with a link to my source GitHub repository. Suggest edits if you think they're necessary!",
-               4: "Allows users to claim that they are in mvc-la, calc-bc, or alg-2-elements for easy identification.",
-               5: "Lists recognized commands."}
-teachCommandDict = {0: "Pings the first person in the help queue.",
-                    1: "Skips the first person in the help queue.",
-                    2: "Signals that Mr. Reyes has answered their question.\n\t* If no name is given, the first person in the queue is resolved.",
-                    3: "Clears the queue of all people who need help. Be careful, this is permanent."}
+@bot.command()
+async def needhelp(ctx):
+    if ctx.message.channel.name == "bot":
+        author = ctx.author
+        if not author in students:
+            students.append(author)
+            await ctx.send(author.nick + " is now in queue for help.")
+        else:
+            await ctx.send(author.nick + " is already in the queue for help!")
+    else:
+        await ctx.send("Please only use bot commands in #bot!")
 
-@client.event
-async def on_message(message):
+@bot.command()
+async def cancelhelp(ctx):
+    if ctx.message.channel.name == "bot":
+        author = ctx.author
+        if author in students:
+            students.remove(author)
+            await ctx.send(author.nick + " no longer needs help.")
+        else:
+            await ctx.send(author.nick + " was not in need of help in the first place!")
+    else:
+        await ctx.send("Please only use bot commands in #bot!")
 
-    channel = message.channel
-    content = message.content
-    author = message.author
-    guild = message.guild
+@bot.command()
+async def queue(ctx):
+    if ctx.message.channel.name == "bot":
+        if len(students) == 0:
+            await ctx.send("There is nobody in the help queue!")
+        else:
+            embed = discord.Embed(title="Help queue", description="People who currently need help from the teacher.", color = 0xff6a57)
+            for i in range(0, len(students)):
+                embed.add_field(name = "#" + str(i + 1) + " " + students[i].nick, value = students[i].status)
+            await ctx.send(embed = embed)
+    else:
+        await ctx.send("Please only use bot commands in #bot!")
 
-    if author == client.user :
-        return
-
-    ### code block for handling text commands
-    if content.startswith("!") and channel.name == "bot":
-        global queue
-
-        response = ""
-        command = content.split(" ")[0]
-
-        # marks the user as needing help
-        if command == "!needhelp":
-            if not author in queue:
-                queue.append(author)
-                response += author.nick + " is in queue for help."
+@bot.command()
+async def ready(ctx):
+    if ctx.message.channel.name == "bot":
+        if discord.utils.get(ctx.guild.roles, name = "teacher") in ctx.author.roles:
+            if len(students) > 0:
+                await ctx.send(students[0].mention + " come back, " + ctx.author.nick + " is ready to help!")
             else:
-                response += author.nick + " is already in queue for help."
+                await ctx.send("No one currently needs help!")
+        else:
+            await ctx.send("You are not authorized to use !ready.")
+    else:
+        await ctx.send("Please only use bot commands in #bot!")
 
-        # unmarks the user as needing help
-        if command == "!cancelhelp":
-            if author in queue:
-                queue.remove(author)
-                response += author.nick + " is no longer in need of help."
+@bot.command()
+async def skip(ctx):
+    if ctx.message.channel.name == "bot":
+        if discord.utils.get(ctx.guild.roles, name = "teacher") in ctx.author.roles:
+            if len(students) == 0:
+                await ctx.send("There's nobody in the queue!")
+            elif len(students) > 1:
+                await ctx.send(students[0].nick + " is now second in the help queue. First in queue is " + students[1].nick + ".")
+                students[0], students[1] = students[1], students[0]
             else:
-                response += author.nick + "was not in the queue."
+                await ctx.send(students[0].nick + " is the only one in the help queue!")
+        else:
+            await ctx.send("You are not authorized to use !ready.")
+    else:
+        await ctx.send("Please only use bot commands in #bot!")
 
-        # lists queue
-        if command == "!queue":
-            if len(queue) == 0:
-                response += "No one in queue for help!"
-            else:
-                response += "```css\n"
-                for i in range(0, len(queue)):
-                    response += "[#" + str(i + 1) + "] <" + queue[i].nick + ">\n"
-                response += "```"
-
-        # ready
-        if command == "!ready":
-            if discord.utils.get(message.guild.roles, name = "teacher") in author.roles:
-                if len(queue) > 0:
-                    response += queue[0].mention + " come back, Mr. Reyes is ready to help!"
+@bot.command()
+async def resolve(ctx, target=None):
+    if ctx.message.channel.name == "bot":
+        if discord.utils.get(ctx.guild.roles, name = "teacher") in ctx.author.roles:
+            if target == None:
+                if students == 0:
+                    await ctx.send("You currently aren't helping anybody.")
                 else:
-                    response += "No one currently needs help!"
+                    await ctx.send(students.pop(0).nick + " had their question answered.")
             else:
-                response += "You are not authorized to use !ready."
-
-        if command == "!skip":
-            if discord.utils.get(message.guild.roles, name = "teacher") in author.roles:
-                if len(queue) == 0:
-                    response += "There's nobody in the queue!"
-                elif len(queue) > 1:
-                    response += queue[0].nick + " is now second in the help queue. First in queue is " + queue[1].nick + "."
-                    queue[0], queue[1] = queue[1], queue[0]
+                resolved = discord.utils.get(ctx.guild.members, nick = target)
+                if resolved in students:
+                    await ctx.send(resolved.nick + " had their question answered")
+                    students.remove(resolved)
                 else:
-                    response += queue[0].nick + " is the only one in the help queue!"
+                    await ctx.send(resolved.nick + "does not need their question answered")
+        else:
+            await ctx.send("You are not authorized to use !ready.")
+    else:
+        await ctx.send("Please only use bot commands in #bot!")
+
+@bot.command()
+async def clear(ctx):
+    if ctx.message.channel.name == "bot":
+        if discord.utils.get(ctx.guild.roles, name = "teacher") in ctx.author.roles:
+            students.clear()
+            await ctx.send("The help queue is cleared.")
+        else:
+            await ctx.send("You are not authorized to use !ready.")
+    else:
+        await ctx.send("Please only use bot commands in #bot!")
+
+@bot.command()
+async def srccode(ctx):
+    await ctx.send("https://github.com/fuzzyhappy/reyes-bot")
+
+@bot.command()
+async def setcourse(ctx, role = None):
+    if ctx.message.channel.name == "bot":
+        if role == None:
+            await ctx.send("You did not specify what course you want to be put in!")
+        else:
+            desiredRole = discord.utils.get(ctx.guild.roles, name = role)
+            if desiredRole.name != "moderator" and desiredRole.name != "teacher" and not desiredRole in ctx.author.roles:
+                await ctx.author.add_roles(desiredRole)
+                await ctx.send("You were successfully put in course " + desiredRole.name + ".")
+            elif desiredRole in ctx.author.roles:
+                await ctx.send("You are already in " + desiredRole.name + ".")
             else:
-                response += "You are not authorized to use !skip."
+                await ctx.send("This bot is not authorized to give out those roles.")
+    else:
+        await ctx.send("Please only use bot commands in #bot!")
 
-        if command == "!resolve":
-            if discord.utils.get(message.guild.roles, name = "teacher") in author.roles:
-                if len(queue) > 0:
-                    contentSplit = content.split(" ")
-                    if len(contentSplit) > 1:
-                        target = discord.utils.get(message.guild.members, nick = contentSplit[1])
-                        if target in queue:
-                            queue.remove(target)
-                            response += target.nick + " had their question answered."
-                        else:
-                            response += target.nick + " is not in the help queue."
-                    else:
-                        response += queue.pop(0).nick + " had their question answered."
-                else:
-                    response += "You aren't helping anybody currently."
+bot.remove_command("help")
 
-            else:
-                response += "You are not authorized to use !resolve."
+@bot.command()
+async def help(ctx):
+    embed = discord.Embed(title="the mover", description="A bot to help with online teaching on Discord during the quarantine.", color=0x389afc)
 
-        if command == "!clear":
-            if discord.utils.get(message.guild.roles, name = "teacher") in author.roles:
-                if len(queue) > 0:
-                    queue.clear()
-                    response += "You have cleared the queue."
-                else:
-                    response += "Nobody is in the help queue currently."
-            else:
-                response += "You are not authorized to use !clear."
+    embed.add_field(name="**GENERAL COMMANDS:**", value="These commands can be used by anyone.", inline=False)
+    embed.add_field(name="!needhelp", value="Add yourself to the students to get help from Mr. Reyes.", inline=False)
+    embed.add_field(name="!cancelhelp", value="Remove yourself to the students to get help from Mr. Reyes.", inline=False)
+    embed.add_field(name="!queue", value="Get the students of people waiting for help.", inline=False)
+    embed.add_field(name="!srccode", value="Responds with a link to my source GitHub repository. Suggest edits if you think they're necessary!", inline=False)
+    embed.add_field(name="!setcourse <Course>", value="Allows users to claim that they are in mvc-la, calc-bc, or alg-2-elements for easy identification.", inline=False)
 
-        # src code
-        if command == "!srccode":
-            response += "https://github.com/fuzzyhappy/reyes-bot"
+    if (discord.utils.get(ctx.guild.roles, name = "teacher") in ctx.author.roles):
+        embed.add_field(name="**TEACHER EXCLUSIVE COMMANDS:**", value="These commands can only be used by teachers.", inline=False)
+        embed.add_field(name="!ready", value="Pings the first person in the help students.", inline=False)
+        embed.add_field(name="!skip", value="Skips the first person in the help students.", inline=False)
+        embed.add_field(name="!resolve <(Optional) Name>", value="Signals that Mr. Reyes has answered their question. If no name is given, the first person in the students is resolved.", inline=False)
+        embed.add_field(name="!clear", value="Clears the students of all people who need help. Be careful, this is permanent.", inline=False)
 
-        # allows students to set their role
-        if command == "!setcourse":
-            if len(content.split(" ")) >= 2:
-                desiredRole = content.split(" ")[1]
-                if desiredRole != "moderator" and desiredRole != "teacher" and discord.utils.get(message.guild.roles, name = desiredRole) in message.guild.roles:
-                    if not discord.utils.get(message.guild.roles, name = desiredRole) in author.roles:
-                        await author.add_roles(discord.utils.get(author.guild.roles, name = desiredRole))
-                        response += "You were successfully given the role " + desiredRole + "."
-                    else:
-                        response += "You already are in the course " + desiredRole + "."
-                elif desiredRole == "moderator" or desiredRole == "teacher":
-                    response += "You are not authorized to request that role from this bot."
-                else:
-                    response += "Role not found, check for spelling mistakes, the only courses offered are mvc-la, calc-bc, and alg-2-elements."
-            else:
-                response += "You did not specify what course you wanted! The format for !setcourse is !setcourse <Course Name (case sensitive)>."
+    await ctx.send(embed=embed)
 
-        # lists commands
-        if command == "!help":
-            response += "```css\n"
-            response += "[GENERAL COMMANDS]\n"
-            for i in range(0, len(commandList)):
-                response += commandList[i] + ":\n\t* " + commandDict[i] + "\n"
-            if discord.utils.get(message.guild.roles, name = "teacher") in author.roles:
-                response += "[TEACHER COMMANDS]\n"
-                for i in range(0, len(teacherCommands)):
-                    response += teacherCommands[i] + ":\n\t* " + teachCommandDict[i] + "\n"
-            response += "```"
-
-        # case where command wasn't recognized
-        if len(response) == 0:
-            response += "That wasn't a recognized command! Try !help to get the list of recognized commands!"
-        await channel.send(response)
-
-    elif content.startswith("!") and channel.name != "bot":
-        await channel.send(author.nick + ", you're not allowed to use bot commands outside of #bot!")
-
-@client.event
+@bot.event
 async def on_member_join(member):
-    await discord.utils.get(member.guild.text_channels, id = 687446137887653892).send("Welcome! " + member.mention + " please set your nickname to your real name so we know who you are!")
+    await discord.utils.get(member.guild.text_channels, name = "general").send("Welcome! " + member.mention + " please set your nickname to your real name so we know who you are!")
 
 TOKEN = open("secret").read().rstrip()
-client.run(TOKEN)
+bot.run(TOKEN)
