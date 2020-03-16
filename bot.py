@@ -114,7 +114,7 @@ async def setcourse(ctx, role = None):
         else:
             desiredRole = discord.utils.get(ctx.guild.roles, name = role)
             if desiredRole == None:
-                out = "That course does not exist! Try checking for typoes. The only roles on this server are "
+                out = "That course does not exist! Try checking for typoes or add quotes around the role if it's more than one word. The only roles on this server are "
                 for role in ctx.guild.roles:
                     if role.name != "@everyone":
                         out += role.name + ", "
@@ -122,7 +122,7 @@ async def setcourse(ctx, role = None):
                 out += "."
                 await ctx.send(out)
             else:
-                if desiredRole.name != "moderator" and desiredRole.name != "teacher" and not desiredRole in ctx.author.roles:
+                if desiredRole.name != "moderator" and desiredRole.name != "teacher" and desiredRole.name != "the mover" and not desiredRole in ctx.author.roles:
                     await ctx.author.add_roles(desiredRole)
                     await ctx.send("You were successfully put in course " + desiredRole.name + ".")
                 elif desiredRole in ctx.author.roles:
