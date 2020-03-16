@@ -113,13 +113,22 @@ async def setcourse(ctx, role = None):
             await ctx.send("You did not specify what course you want to be put in!")
         else:
             desiredRole = discord.utils.get(ctx.guild.roles, name = role)
-            if desiredRole.name != "moderator" and desiredRole.name != "teacher" and not desiredRole in ctx.author.roles:
-                await ctx.author.add_roles(desiredRole)
-                await ctx.send("You were successfully put in course " + desiredRole.name + ".")
-            elif desiredRole in ctx.author.roles:
-                await ctx.send("You are already in " + desiredRole.name + ".")
+            if desiredRole == None:
+                out = "That course does not exist! Try checking for typoes. The only roles on this server are "
+                for role in ctx.guild.roles:
+                    if role.name != "@everyone":
+                        out += role.name + ", "
+                out = out[:-2]
+                out += "."
+                await ctx.send(out)
             else:
-                await ctx.send("This bot is not authorized to give out those roles.")
+                if desiredRole.name != "moderator" and desiredRole.name != "teacher" and not desiredRole in ctx.author.roles:
+                    await ctx.author.add_roles(desiredRole)
+                    await ctx.send("You were successfully put in course " + desiredRole.name + ".")
+                elif desiredRole in ctx.author.roles:
+                    await ctx.send("You are already in " + desiredRole.name + ".")
+                else:
+                    await ctx.send("This bot is not authorized to give out those roles.")
     else:
         await ctx.send("Please only use bot commands in #bot!")
 
@@ -134,7 +143,7 @@ async def help(ctx):
     embed.add_field(name="!cancelhelp", value="Remove yourself to the students to get help from Mr. Reyes.", inline=False)
     embed.add_field(name="!queue", value="Get the students of people waiting for help.", inline=False)
     embed.add_field(name="!srccode", value="Responds with a link to my source GitHub repository. Suggest edits if you think they're necessary!", inline=False)
-    embed.add_field(name="!setcourse <Course>", value="Allows users to claim that they are in mvc-la, calc-bc, or alg-2-elements for easy identification.", inline=False)
+    embed.add_field(name="!setcourse <Course>", value="Allows users to claim that they are in a specific course for easy identification.", inline=False)
 
     if (discord.utils.get(ctx.guild.roles, name = "teacher") in ctx.author.roles):
         embed.add_field(name="**TEACHER EXCLUSIVE COMMANDS:**", value="These commands can only be used by teachers.", inline=False)
