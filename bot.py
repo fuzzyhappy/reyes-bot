@@ -136,23 +136,27 @@ bot.remove_command("help")
 
 @bot.command()
 async def help(ctx):
-    embed = discord.Embed(title="the mover", description="A bot to help with online teaching on Discord during the quarantine.", color=0x389afc)
+    if ctx.message.channel.name == "bot":
+        embed = discord.Embed(title="the mover", description="A bot to help with online teaching on Discord during the quarantine.", color=0x389afc)
 
-    embed.add_field(name="**GENERAL COMMANDS:**", value="These commands can be used by anyone.", inline=False)
-    embed.add_field(name="!needhelp", value="Add yourself to the students to get help from Mr. Reyes.", inline=False)
-    embed.add_field(name="!cancelhelp", value="Remove yourself to the students to get help from Mr. Reyes.", inline=False)
-    embed.add_field(name="!queue", value="Get the students of people waiting for help.", inline=False)
-    embed.add_field(name="!srccode", value="Responds with a link to my source GitHub repository. Suggest edits if you think they're necessary!", inline=False)
-    embed.add_field(name="!setcourse <Course>", value="Allows users to claim that they are in a specific course for easy identification.", inline=False)
+        embed.add_field(name="**GENERAL COMMANDS:**", value="These commands can be used by anyone.", inline=False)
+        embed.add_field(name="!needhelp", value="Add yourself to the students to get help from Mr. Reyes.", inline=False)
+        embed.add_field(name="!cancelhelp", value="Remove yourself to the students to get help from Mr. Reyes.", inline=False)
+        embed.add_field(name="!queue", value="Get the students of people waiting for help.", inline=False)
+        embed.add_field(name="!srccode", value="Responds with a link to my source GitHub repository. Suggest edits if you think they're necessary!", inline=False)
+        embed.add_field(name="!setcourse <Course>", value="Allows users to claim that they are in a specific course for easy identification.", inline=False)
 
-    if (discord.utils.get(ctx.guild.roles, name = "teacher") in ctx.author.roles):
-        embed.add_field(name="**TEACHER EXCLUSIVE COMMANDS:**", value="These commands can only be used by teachers.", inline=False)
-        embed.add_field(name="!ready", value="Pings the first person in the help students.", inline=False)
-        embed.add_field(name="!skip", value="Skips the first person in the help students.", inline=False)
-        embed.add_field(name="!resolve <(Optional) Name>", value="Signals that Mr. Reyes has answered their question. If no name is given, the first person in the students is resolved.", inline=False)
-        embed.add_field(name="!clear", value="Clears the students of all people who need help. Be careful, this is permanent.", inline=False)
+        if (discord.utils.get(ctx.guild.roles, name = "teacher") in ctx.author.roles):
+            embed.add_field(name="**TEACHER EXCLUSIVE COMMANDS:**", value="These commands can only be used by teachers.", inline=False)
+            embed.add_field(name="!ready", value="Pings the first person in the help students.", inline=False)
+            embed.add_field(name="!skip", value="Skips the first person in the help students.", inline=False)
+            embed.add_field(name="!resolve <(Optional) Name>", value="Signals that Mr. Reyes has answered their question. If no name is given, the first person in the students is resolved.", inline=False)
+            embed.add_field(name="!clear", value="Clears the students of all people who need help. Be careful, this is permanent.", inline=False)
 
-    await ctx.send(embed=embed)
+        await ctx.send(embed=embed)
+
+    else:
+        await ctx.send("Please only use bot commands in #bot!")
 
 @bot.event
 async def on_member_join(member):
