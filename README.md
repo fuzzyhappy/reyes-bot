@@ -1,5 +1,5 @@
 # reyes-bot
-bot for our good buddy and pal mr. reyes
+Bot for helping moderate the help queue in my multivariable calculus course's discord server.
 
 # setup and install
 ```
